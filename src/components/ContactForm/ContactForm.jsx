@@ -1,8 +1,10 @@
+// src/components/ContactForm/ContactForm.jsx
+
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { nanoid } from "nanoid";
 import * as Yup from "yup";
-import { useDispatch } from "react-redux"; // ⬅️ Redux Hook'u
-import { addContact } from "../../redux/contactsSlice"; // ⬅️ Action Creator
+import { useDispatch } from "react-redux";
+import { addContact } from "../../redux/contactsOps";
 import css from "./ContactForm.module.css";
 
 // Yup ile doğrulama şeması
@@ -14,7 +16,12 @@ const ContactSchema = Yup.object().shape({
   number: Yup.string()
     .min(3, "Too Short!")
     .max(50, "Too Long!")
-    .required("Required"),
+    .required("Required")
+    // Sadece rakam, boşluk, parantez ve tire kabul eden RegEx
+    .matches(
+      /^[0-9\s()+-]+$/,
+      "Phone number can only contain digits, spaces, dashes, or parentheses"
+    ),
 });
 
 // Formun başlangıç değerleri
@@ -23,24 +30,18 @@ const initialValues = {
   number: "",
 };
 
-// Bileşen artık prop almaz (Redux gereksinimi)
 const ContactForm = () => {
-  const dispatch = useDispatch(); // ⬅️ Dispatch fonksiyonunu alıyoruz
+  const dispatch = useDispatch();
   const nameId = nanoid();
   const numberId = nanoid();
 
   const handleSubmit = (values, actions) => {
-    // Yeni kişi objesini oluşturuyoruz
     const newContact = {
-      id: nanoid(),
       name: values.name,
       number: values.number,
     };
 
-    // ⬅️ addContact Action Creator'ını çağırıp, sonucu dispatch ediyoruz
     dispatch(addContact(newContact));
-
-    // Formu temizliyoruz
     actions.resetForm();
   };
 
@@ -71,5 +72,4 @@ const ContactForm = () => {
   );
 };
 
-// ⬅️ Ödev gereksinimi: Varsayılan dışa aktarma (export default)
 export default ContactForm;
